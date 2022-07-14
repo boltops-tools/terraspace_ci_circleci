@@ -1,0 +1,36 @@
+#!/bin/bash
+set -eux
+# install terraform
+git clone https://github.com/tfutils/tfenv.git ~/.tfenv
+export PATH="$HOME/.tfenv/bin:$PATH"
+tfenv install latest
+tfenv use latest
+terraform --version
+type terraform # /home/circleci/.tfenv/bin/terraform
+# shim for terraform since it's since is not the .tfenv/bin
+mkdir -p /home/circleci/.local/bin
+cat << 'EOF' > /home/circleci/.local/bin/terraform
+export PATH="$HOME/.tfenv/bin:$PATH"
+exec terraform "$@"
+EOF
+chmod +x /home/circleci/.local/bin/terraform
+
+# install terraspace
+bundle install
+# shim for circleci
+mv ~/.rubygems/bin/terraspace ~/.rubygems/bin/terraspace.rb
+cat << 'EOF' > ~/.rubygems/bin/terraspace
+#!/bin/bash
+EXE=~/.rubygems/bin/terraspace.rb
+if [ -f config/app.rb ]; then
+  exec bundle exec $EXE "$@"
+else
+  exec $EXE "$@"
+fi
+EOF
+chmod +x ~/.rubygems/bin/terraspace
+terraspace --version
+
+# install infracost
+# https://www.infracost.io/docs/
+curl -fsSL https://raw.githubusercontent.com/infracost/infracost/master/scripts/install.sh | sh
