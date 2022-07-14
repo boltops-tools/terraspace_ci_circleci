@@ -9,6 +9,22 @@ parameters:
     default: false
 
 jobs:
+  dev_plan:
+    docker:
+      - image: cimg/ruby:3.1.0
+    environment: *common_env_vars
+    steps:
+      - checkout
+      - run: .circleci/bin/install
+      - run: terraspace plan demo
+  dev_up:
+    docker:
+      - image: cimg/ruby:3.1.0
+    environment: *common_env_vars
+    steps:
+      - checkout
+      - run: .circleci/bin/install
+      - run: terraspace up demo -y
   # Manually triggered: TS_ENV=prod
   prod_plan:
     docker:
@@ -27,19 +43,25 @@ jobs:
       - run: .circleci/bin/install
       - run: TS_ENV=prod terraspace up demo -y
 
-  # On PR:   TS_ENV=dev terraspace plan
-  # On push: TS_ENV=dev terraspace up - checks a specific branch only
-  dev_plan_or_up:
-    docker:
-      - image: cimg/ruby:3.1.0
-    environment: *common_env_vars
-    steps:
-      - checkout
-      - run: .circleci/bin/install
-      - run: .circleci/bin/terraspace-plan-or-up.sh demo # depends if PR
-
 workflows:
-  prod_plan_then_up_with_approval:
+  # use different dev_plan and dev_up workflows so it shows up on the CircleCI dashboard
+  dev_plan:
+    when:
+      not: << pipeline.parameters.manual >>
+    jobs:
+      - dev_plan:
+          filters:
+            branches:
+              ignore: main
+  dev_up:
+    when:
+      not: << pipeline.parameters.manual >>
+    jobs:
+      - dev_up:
+          filters:
+            branches:
+              only: main
+  prod_with_approval:
     when: << pipeline.parameters.manual >>
     jobs:
       - prod_plan
@@ -50,8 +72,3 @@ workflows:
       - prod_up:
           requires:
             - hold
-  dev_plan_or_up:
-    when:
-      not: << pipeline.parameters.manual >>
-    jobs:
-      - dev_plan_or_up
