@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-RSpec.describe TerraspaceCiGithub do
+RSpec.describe TerraspaceCiCircleci do
   it "has a version number" do
-    expect(TerraspaceCiGithub::VERSION).not_to be nil
+    expect(TerraspaceCiCircleci::VERSION).not_to be nil
   end
 end
