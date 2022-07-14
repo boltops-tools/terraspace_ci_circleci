@@ -9,6 +9,7 @@ module TerraspaceCiCircleci
   class Error < StandardError; end
 end
 
+require "terraspace"
 Terraspace::Cloud::Ci.register(
   name: "circleci",
   env_key: "CIRCLECI",
