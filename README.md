@@ -14,7 +14,7 @@ Add gem to your Terraspace project
 
 Gemfile
 
-    gem terraspace_ci_circleci
+    gem "terraspace_ci_circleci"
 
 Then to install run
 
